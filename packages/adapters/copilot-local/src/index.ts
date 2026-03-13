@@ -34,7 +34,7 @@ Operational fields:
 - graceSec (number, optional): SIGTERM grace period in seconds
 
 Notes:
-- Prompts are piped via stdin (Copilot receives "-" prompt argument).
+- Prompts are passed as the value to \`-p\` (Copilot non-interactive prompt mode).
 - Paperclip auto-injects local skills into the Codex-compatible skills dir used by this adapter ("$CODEX_HOME/skills" or "~/.codex/skills") when missing.
 - When Paperclip realizes a workspace/runtime for a run, it injects PAPERCLIP_WORKSPACE_* and PAPERCLIP_RUNTIME_* env vars for agent-side tooling.
 `;

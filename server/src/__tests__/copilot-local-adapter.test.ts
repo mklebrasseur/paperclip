@@ -57,6 +57,7 @@ describe("copilot_local adapter wrapper", () => {
 
     expect(forwarded.config.command).toBe("copilot");
     expect(forwarded.config.includeWorkspaceArg).toBe(false);
+    expect(forwarded.config.passPromptAsArgument).toBe(true);
     expect(typeof forwarded.onMeta).toBe("function");
 
     await forwarded.onMeta?.({ adapterType: "cursor", command: "copilot" });
