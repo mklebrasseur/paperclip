@@ -158,6 +158,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const command = asString(config.command, "agent");
   const model = asString(config.model, DEFAULT_CURSOR_LOCAL_MODEL).trim();
   const mode = normalizeMode(asString(config.mode, ""));
+  const includeWorkspaceArg =
+    typeof config.includeWorkspaceArg === "boolean" ? config.includeWorkspaceArg : true;
 
   const workspaceContext = parseObject(context.paperclipWorkspace);
   const workspaceCwd = asString(workspaceContext.cwd, "");
@@ -329,7 +331,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const prompt = `${instructionsPrefix}${paperclipEnvNote}${renderedPrompt}`;
 
   const buildArgs = (resumeSessionId: string | null) => {
-    const args = ["-p", "--output-format", "stream-json", "--workspace", cwd];
+    const args = ["-p", "--output-format", "stream-json"];
+    if (includeWorkspaceArg) args.push("--workspace", cwd);
     if (resumeSessionId) args.push("--resume", resumeSessionId);
     if (model) args.push("--model", model);
     if (mode) args.push("--mode", mode);

@@ -4,6 +4,7 @@ import { execute as executeCursor } from "@paperclipai/adapter-cursor-local/serv
 export async function execute(ctx: AdapterExecutionContext) {
   const config = {
     ...ctx.config,
+    includeWorkspaceArg: false,
     command:
       typeof ctx.config.command === "string" && ctx.config.command.trim().length > 0
         ? ctx.config.command
