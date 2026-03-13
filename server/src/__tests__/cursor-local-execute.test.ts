@@ -12,8 +12,12 @@ const capturePath = process.env.PAPERCLIP_TEST_CAPTURE_PATH;
 let prompt = "";
 try {
   prompt = fs.readFileSync(0, "utf8");
-} catch {
-  prompt = "";
+} catch (error) {
+  if (error && typeof error === "object" && error.code === "EBADF") {
+    prompt = "";
+  } else {
+    throw error;
+  }
 }
 const payload = {
   argv: process.argv.slice(2),
