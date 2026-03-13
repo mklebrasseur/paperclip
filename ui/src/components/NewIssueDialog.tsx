@@ -77,7 +77,7 @@ interface IssueDraft {
   useIsolatedExecutionWorkspace: boolean;
 }
 
-const ISSUE_OVERRIDE_ADAPTER_TYPES = new Set(["claude_local", "codex_local", "opencode_local"]);
+const ISSUE_OVERRIDE_ADAPTER_TYPES = new Set(["claude_local", "codex_local", "copilot_local", "opencode_local"]);
 
 const ISSUE_THINKING_EFFORT_OPTIONS = {
   claude_local: [
@@ -87,6 +87,13 @@ const ISSUE_THINKING_EFFORT_OPTIONS = {
     { value: "high", label: "High" },
   ],
   codex_local: [
+    { value: "", label: "Default" },
+    { value: "minimal", label: "Minimal" },
+    { value: "low", label: "Low" },
+    { value: "medium", label: "Medium" },
+    { value: "high", label: "High" },
+  ],
+  copilot_local: [
     { value: "", label: "Default" },
     { value: "minimal", label: "Minimal" },
     { value: "low", label: "Low" },
@@ -117,7 +124,7 @@ function buildAssigneeAdapterOverrides(input: {
   const adapterConfig: Record<string, unknown> = {};
   if (input.modelOverride) adapterConfig.model = input.modelOverride;
   if (input.thinkingEffortOverride) {
-    if (adapterType === "codex_local") {
+    if (adapterType === "codex_local" || adapterType === "copilot_local") {
       adapterConfig.modelReasoningEffort = input.thinkingEffortOverride;
     } else if (adapterType === "opencode_local") {
       adapterConfig.variant = input.thinkingEffortOverride;
@@ -382,7 +389,7 @@ export function NewIssueDialog() {
     }
 
     const validThinkingValues =
-      assigneeAdapterType === "codex_local"
+      assigneeAdapterType === "codex_local" || assigneeAdapterType === "copilot_local"
         ? ISSUE_THINKING_EFFORT_OPTIONS.codex_local
         : assigneeAdapterType === "opencode_local"
           ? ISSUE_THINKING_EFFORT_OPTIONS.opencode_local
@@ -501,13 +508,15 @@ export function NewIssueDialog() {
   const assigneeOptionsTitle =
     assigneeAdapterType === "claude_local"
       ? "Claude options"
+      : assigneeAdapterType === "copilot_local"
+        ? "Copilot options"
       : assigneeAdapterType === "codex_local"
         ? "Codex options"
         : assigneeAdapterType === "opencode_local"
           ? "OpenCode options"
         : "Agent options";
   const thinkingEffortOptions =
-    assigneeAdapterType === "codex_local"
+    assigneeAdapterType === "codex_local" || assigneeAdapterType === "copilot_local"
       ? ISSUE_THINKING_EFFORT_OPTIONS.codex_local
       : assigneeAdapterType === "opencode_local"
         ? ISSUE_THINKING_EFFORT_OPTIONS.opencode_local

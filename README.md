@@ -69,7 +69,7 @@ It looks like a task manager — but under the hood it has org charts, budgets, 
 ## Paperclip is right for you if
 
 - ✅ You want to build **autonomous AI companies**
-- ✅ You **coordinate many different agents** (OpenClaw, Codex, Claude, Cursor) toward a common goal
+- ✅ You **coordinate many different agents** (OpenClaw, Codex, Copilot CLI, Claude, Cursor) toward a common goal
 - ✅ You have **20 simultaneous Claude Code terminals** open and lose track of what everyone is doing
 - ✅ You want agents running **autonomously 24/7**, but still want to audit work and chime in when needed
 - ✅ You want to **monitor costs** and enforce budgets

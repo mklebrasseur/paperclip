@@ -36,6 +36,10 @@ import { redactEventPayload } from "../redaction.js";
 import { redactCurrentUserValue } from "../log-redaction.js";
 import { runClaudeLogin } from "@paperclipai/adapter-claude-local/server";
 import {
+  DEFAULT_COPILOT_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
+  DEFAULT_COPILOT_LOCAL_MODEL,
+} from "@paperclipai/adapter-copilot-local";
+import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
 } from "@paperclipai/adapter-codex-local";
@@ -47,6 +51,7 @@ export function agentRoutes(db: Db) {
   const DEFAULT_INSTRUCTIONS_PATH_KEYS: Record<string, string> = {
     claude_local: "instructionsFilePath",
     codex_local: "instructionsFilePath",
+    copilot_local: "instructionsFilePath",
     gemini_local: "instructionsFilePath",
     opencode_local: "instructionsFilePath",
     cursor: "instructionsFilePath",
@@ -249,6 +254,18 @@ export function agentRoutes(db: Db) {
         typeof next.dangerouslyBypassSandbox === "boolean";
       if (!hasBypassFlag) {
         next.dangerouslyBypassApprovalsAndSandbox = DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX;
+      }
+      return ensureGatewayDeviceKey(adapterType, next);
+    }
+    if (adapterType === "copilot_local") {
+      if (!asNonEmptyString(next.model)) {
+        next.model = DEFAULT_COPILOT_LOCAL_MODEL;
+      }
+      const hasBypassFlag =
+        typeof next.dangerouslyBypassApprovalsAndSandbox === "boolean" ||
+        typeof next.dangerouslyBypassSandbox === "boolean";
+      if (!hasBypassFlag) {
+        next.dangerouslyBypassApprovalsAndSandbox = DEFAULT_COPILOT_LOCAL_BYPASS_APPROVALS_AND_SANDBOX;
       }
       return ensureGatewayDeviceKey(adapterType, next);
     }

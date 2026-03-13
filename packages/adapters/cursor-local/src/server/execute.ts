@@ -149,6 +149,10 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const command = asString(config.command, "agent");
   const model = asString(config.model, DEFAULT_CURSOR_LOCAL_MODEL).trim();
   const mode = normalizeMode(asString(config.mode, ""));
+  const includeWorkspaceArg =
+    typeof config.includeWorkspaceArg === "boolean" ? config.includeWorkspaceArg : true;
+  const passPromptAsArgument =
+    typeof config.passPromptAsArgument === "boolean" ? config.passPromptAsArgument : false;
 
   const workspaceContext = parseObject(context.paperclipWorkspace);
   const workspaceCwd = asString(workspaceContext.cwd, "");
@@ -292,7 +296,11 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     if (autoTrustEnabled) {
       notes.push("Auto-added --yolo to bypass interactive prompts.");
     }
-    notes.push("Prompt is piped to Cursor via stdin.");
+    if (passPromptAsArgument) {
+      notes.push("Prompt is passed to Cursor as the -p argument value.");
+    } else {
+      notes.push("Prompt is piped to Cursor via stdin.");
+    }
     if (!instructionsFilePath) return notes;
     if (instructionsPrefix.length > 0) {
       notes.push(
@@ -320,7 +328,10 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const prompt = `${instructionsPrefix}${paperclipEnvNote}${renderedPrompt}`;
 
   const buildArgs = (resumeSessionId: string | null) => {
-    const args = ["-p", "--output-format", "stream-json", "--workspace", cwd];
+    const args = ["-p"];
+    if (passPromptAsArgument) args.push(prompt);
+    args.push("--output-format", "stream-json");
+    if (includeWorkspaceArg) args.push("--workspace", cwd);
     if (resumeSessionId) args.push("--resume", resumeSessionId);
     if (model) args.push("--model", model);
     if (mode) args.push("--mode", mode);
@@ -373,7 +384,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       env,
       timeoutSec,
       graceSec,
-      stdin: prompt,
+      stdin: passPromptAsArgument ? undefined : prompt,
       onLog: async (stream, chunk) => {
         if (stream !== "stdout") {
           await onLog(stream, chunk);
