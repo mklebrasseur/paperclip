@@ -1,1 +1,1 @@
-export { printCodexStreamEvent as printCopilotStreamEvent } from "@paperclipai/adapter-codex-local/cli";
+export { printCursorStreamEvent as printCopilotStreamEvent } from "@paperclipai/adapter-cursor-local/cli";

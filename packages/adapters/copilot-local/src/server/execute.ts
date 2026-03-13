@@ -1,5 +1,5 @@
 import type { AdapterExecutionContext, AdapterInvocationMeta } from "@paperclipai/adapter-utils";
-import { execute as executeCodex } from "@paperclipai/adapter-codex-local/server";
+import { execute as executeCursor } from "@paperclipai/adapter-cursor-local/server";
 
 export async function execute(ctx: AdapterExecutionContext) {
   const config = {
@@ -10,7 +10,7 @@ export async function execute(ctx: AdapterExecutionContext) {
         : "copilot",
   };
 
-  return executeCodex({
+  return executeCursor({
     ...ctx,
     config,
     onMeta: ctx.onMeta

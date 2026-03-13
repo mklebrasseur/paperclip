@@ -1,1 +1,1 @@
-export { parseCodexStdoutLine as parseCopilotStdoutLine } from "@paperclipai/adapter-codex-local/ui";
+export { parseCursorStdoutLine as parseCopilotStdoutLine } from "@paperclipai/adapter-cursor-local/ui";

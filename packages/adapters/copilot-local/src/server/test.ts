@@ -1,5 +1,5 @@
 import type { AdapterEnvironmentTestContext } from "@paperclipai/adapter-utils";
-import { testEnvironment as codexTestEnvironment } from "@paperclipai/adapter-codex-local/server";
+import { testEnvironment as cursorTestEnvironment } from "@paperclipai/adapter-cursor-local/server";
 
 export async function testEnvironment(ctx: AdapterEnvironmentTestContext) {
   const config =
@@ -7,7 +7,7 @@ export async function testEnvironment(ctx: AdapterEnvironmentTestContext) {
       ? (ctx.config as Record<string, unknown>)
       : {};
 
-  return codexTestEnvironment({
+  return cursorTestEnvironment({
     ...ctx,
     config: {
       ...config,

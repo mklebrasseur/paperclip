@@ -140,6 +140,9 @@ importers:
       '@paperclipai/adapter-codex-local':
         specifier: workspace:*
         version: link:../codex-local
+      '@paperclipai/adapter-cursor-local':
+        specifier: workspace:*
+        version: link:../cursor-local
       '@paperclipai/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
