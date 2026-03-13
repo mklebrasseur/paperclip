@@ -12,6 +12,10 @@ import { agentsApi } from "../api/agents";
 import { secretsApi } from "../api/secrets";
 import { assetsApi } from "../api/assets";
 import {
+  DEFAULT_COPILOT_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
+  DEFAULT_COPILOT_LOCAL_MODEL,
+} from "@paperclipai/adapter-copilot-local";
+import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
 } from "@paperclipai/adapter-codex-local";
@@ -283,9 +287,11 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   const isLocal =
     adapterType === "claude_local" ||
     adapterType === "codex_local" ||
+    adapterType === "copilot_local" ||
     adapterType === "gemini_local" ||
     adapterType === "opencode_local" ||
     adapterType === "cursor";
+  const isCodexFamilyAdapter = adapterType === "codex_local" || adapterType === "copilot_local";
   const uiAdapter = useMemo(() => getUIAdapter(adapterType), [adapterType]);
 
   // Fetch adapter models for the effective adapter type
@@ -351,7 +357,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     : eff("adapterConfig", "model", String(config.model ?? ""));
 
   const thinkingEffortKey =
-    adapterType === "codex_local"
+    isCodexFamilyAdapter
       ? "modelReasoningEffort"
       : adapterType === "cursor"
         ? "mode"
@@ -359,7 +365,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
           ? "variant"
           : "effort";
   const thinkingEffortOptions =
-    adapterType === "codex_local"
+    isCodexFamilyAdapter
       ? codexThinkingEffortOptions
       : adapterType === "cursor"
         ? cursorModeOptions
@@ -368,7 +374,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
           : claudeThinkingEffortOptions;
   const currentThinkingEffort = isCreate
     ? val!.thinkingEffort
-    : adapterType === "codex_local"
+    : isCodexFamilyAdapter
       ? eff(
           "adapterConfig",
           "modelReasoningEffort",
@@ -380,7 +386,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         ? eff("adapterConfig", "variant", String(config.variant ?? ""))
       : eff("adapterConfig", "effort", String(config.effort ?? ""));
   const showThinkingEffort = adapterType !== "gemini_local";
-  const codexSearchEnabled = adapterType === "codex_local"
+  const codexSearchEnabled = isCodexFamilyAdapter
     ? (isCreate ? Boolean(val!.search) : eff("adapterConfig", "search", Boolean(config.search)))
     : false;
 
@@ -493,10 +499,13 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                   // Reset all adapter-specific fields to defaults when switching adapter type
                   const { adapterType: _at, ...defaults } = defaultCreateValues;
                   const nextValues: CreateConfigValues = { ...defaults, adapterType: t };
-                  if (t === "codex_local") {
-                    nextValues.model = DEFAULT_CODEX_LOCAL_MODEL;
+                  if (t === "codex_local" || t === "copilot_local") {
+                    nextValues.model =
+                      t === "copilot_local" ? DEFAULT_COPILOT_LOCAL_MODEL : DEFAULT_CODEX_LOCAL_MODEL;
                     nextValues.dangerouslyBypassSandbox =
-                      DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX;
+                      t === "copilot_local"
+                        ? DEFAULT_COPILOT_LOCAL_BYPASS_APPROVALS_AND_SANDBOX
+                        : DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX;
                   } else if (t === "gemini_local") {
                     nextValues.model = DEFAULT_GEMINI_LOCAL_MODEL;
                   } else if (t === "cursor") {
@@ -515,6 +524,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       model:
                         t === "codex_local"
                           ? DEFAULT_CODEX_LOCAL_MODEL
+                          : t === "copilot_local"
+                            ? DEFAULT_COPILOT_LOCAL_MODEL
                           : t === "gemini_local"
                             ? DEFAULT_GEMINI_LOCAL_MODEL
                           : t === "cursor"
@@ -524,10 +535,12 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       modelReasoningEffort: "",
                       variant: "",
                       mode: "",
-                      ...(t === "codex_local"
+                      ...((t === "codex_local" || t === "copilot_local")
                         ? {
                             dangerouslyBypassApprovalsAndSandbox:
-                              DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
+                              t === "copilot_local"
+                                ? DEFAULT_COPILOT_LOCAL_BYPASS_APPROVALS_AND_SANDBOX
+                                : DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
                           }
                         : {}),
                     },
@@ -619,10 +632,12 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                   }
                   immediate
                   className={inputClass}
-                  placeholder={
-                    adapterType === "codex_local"
-                      ? "codex"
-                      : adapterType === "gemini_local"
+                    placeholder={
+                      adapterType === "codex_local"
+                        ? "codex"
+                        : adapterType === "copilot_local"
+                          ? "copilot"
+                        : adapterType === "gemini_local"
                         ? "gemini"
                       : adapterType === "cursor"
                         ? "agent"
@@ -668,7 +683,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                     open={thinkingEffortOpen}
                     onOpenChange={setThinkingEffortOpen}
                   />
-                  {adapterType === "codex_local" &&
+                  {isCodexFamilyAdapter &&
                     codexSearchEnabled &&
                     currentThinkingEffort === "minimal" && (
                       <p className="text-xs text-amber-400">
@@ -911,7 +926,7 @@ function AdapterEnvironmentResult({ result }: { result: AdapterEnvironmentTestRe
 
 /* ---- Internal sub-components ---- */
 
-const ENABLED_ADAPTER_TYPES = new Set(["claude_local", "codex_local", "gemini_local", "opencode_local", "cursor"]);
+const ENABLED_ADAPTER_TYPES = new Set(["claude_local", "codex_local", "copilot_local", "gemini_local", "opencode_local", "cursor"]);
 
 /** Display list includes all real adapter types plus UI-only coming-soon entries. */
 const ADAPTER_DISPLAY_LIST: { value: string; label: string; comingSoon: boolean }[] = [

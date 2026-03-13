@@ -25,6 +25,10 @@ import { getUIAdapter } from "../adapters";
 import { defaultCreateValues } from "./agent-config-defaults";
 import { parseOnboardingGoalInput } from "../lib/onboarding-goal";
 import {
+  DEFAULT_COPILOT_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
+  DEFAULT_COPILOT_LOCAL_MODEL
+} from "@paperclipai/adapter-copilot-local";
+import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL
 } from "@paperclipai/adapter-codex-local";
@@ -57,6 +61,7 @@ type Step = 1 | 2 | 3 | 4;
 type AdapterType =
   | "claude_local"
   | "codex_local"
+  | "copilot_local"
   | "gemini_local"
   | "opencode_local"
   | "pi_local"
@@ -176,6 +181,7 @@ export function OnboardingWizard() {
   const isLocalAdapter =
     adapterType === "claude_local" ||
     adapterType === "codex_local" ||
+    adapterType === "copilot_local" ||
     adapterType === "gemini_local" ||
     adapterType === "opencode_local" ||
     adapterType === "cursor";
@@ -183,6 +189,8 @@ export function OnboardingWizard() {
     command.trim() ||
     (adapterType === "codex_local"
       ? "codex"
+      : adapterType === "copilot_local"
+      ? "copilot"
       : adapterType === "gemini_local"
         ? "gemini"
       : adapterType === "cursor"
@@ -283,6 +291,8 @@ export function OnboardingWizard() {
       model:
         adapterType === "codex_local"
           ? model || DEFAULT_CODEX_LOCAL_MODEL
+          : adapterType === "copilot_local"
+            ? model || DEFAULT_COPILOT_LOCAL_MODEL
           : adapterType === "gemini_local"
             ? model || DEFAULT_GEMINI_LOCAL_MODEL
           : adapterType === "cursor"
@@ -295,6 +305,8 @@ export function OnboardingWizard() {
       dangerouslyBypassSandbox:
         adapterType === "codex_local"
           ? DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX
+          : adapterType === "copilot_local"
+            ? DEFAULT_COPILOT_LOCAL_BYPASS_APPROVALS_AND_SANDBOX
           : defaultCreateValues.dangerouslyBypassSandbox
     });
     if (adapterType === "claude_local" && forceUnsetAnthropicApiKey) {
@@ -701,6 +713,13 @@ export function OnboardingWizard() {
                           icon: Code,
                           desc: "Local Codex agent",
                           recommended: true
+                        },
+                        {
+                          value: "copilot_local" as const,
+                          label: "Copilot CLI",
+                          icon: Code,
+                          desc: "Local Copilot agent",
+                          recommended: true
                         }
                       ].map((opt) => (
                         <button
@@ -714,10 +733,14 @@ export function OnboardingWizard() {
                           onClick={() => {
                             const nextType = opt.value as AdapterType;
                             setAdapterType(nextType);
-                            if (nextType === "codex_local" && !model) {
-                              setModel(DEFAULT_CODEX_LOCAL_MODEL);
+                            if ((nextType === "codex_local" || nextType === "copilot_local") && !model) {
+                              setModel(
+                                nextType === "copilot_local"
+                                  ? DEFAULT_COPILOT_LOCAL_MODEL
+                                  : DEFAULT_CODEX_LOCAL_MODEL,
+                              );
                             }
-                            if (nextType !== "codex_local") {
+                            if (nextType !== "codex_local" && nextType !== "copilot_local") {
                               setModel("");
                             }
                           }}
@@ -834,6 +857,7 @@ export function OnboardingWizard() {
                   {/* Conditional adapter fields */}
                   {(adapterType === "claude_local" ||
                     adapterType === "codex_local" ||
+                    adapterType === "copilot_local" ||
                     adapterType === "gemini_local" ||
                     adapterType === "opencode_local" ||
                     adapterType === "pi_local" ||
@@ -1027,6 +1051,7 @@ export function OnboardingWizard() {
                             {adapterType === "cursor"
                               ? `${effectiveAdapterCommand} -p --mode ask --output-format json \"Respond with hello.\"`
                               : adapterType === "codex_local"
+                              || adapterType === "copilot_local"
                               ? `${effectiveAdapterCommand} exec --json -`
                               : adapterType === "gemini_local"
                                 ? `${effectiveAdapterCommand} --output-format json "Respond with hello."`
@@ -1040,6 +1065,7 @@ export function OnboardingWizard() {
                           </p>
                           {adapterType === "cursor" ||
                           adapterType === "codex_local" ||
+                          adapterType === "copilot_local" ||
                           adapterType === "gemini_local" ||
                           adapterType === "opencode_local" ? (
                             <p className="text-muted-foreground">
@@ -1055,8 +1081,8 @@ export function OnboardingWizard() {
                               <span className="font-mono">
                                 {adapterType === "cursor"
                                   ? "agent login"
-                                  : adapterType === "codex_local"
-                                    ? "codex login"
+                                  : adapterType === "codex_local" || adapterType === "copilot_local"
+                                    ? `${effectiveAdapterCommand} login`
                                     : adapterType === "gemini_local"
                                       ? "gemini auth"
                                       : "opencode auth login"}
