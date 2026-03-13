@@ -491,7 +491,9 @@ export function NewIssueDialog() {
   const assigneeOptionsTitle =
     assigneeAdapterType === "claude_local"
       ? "Claude options"
-      : assigneeAdapterType === "codex_local" || assigneeAdapterType === "copilot_local"
+      : assigneeAdapterType === "copilot_local"
+        ? "Copilot options"
+      : assigneeAdapterType === "codex_local"
         ? "Codex options"
         : assigneeAdapterType === "opencode_local"
           ? "OpenCode options"
