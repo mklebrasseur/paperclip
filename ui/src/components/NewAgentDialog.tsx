@@ -25,6 +25,7 @@ import { OpenCodeLogoIcon } from "./OpenCodeLogoIcon";
 type AdvancedAdapterType =
   | "claude_local"
   | "codex_local"
+  | "copilot_local"
   | "gemini_local"
   | "opencode_local"
   | "pi_local"
@@ -50,6 +51,13 @@ const ADVANCED_ADAPTER_OPTIONS: Array<{
     label: "Codex",
     icon: Code,
     desc: "Local Codex agent",
+    recommended: true,
+  },
+  {
+    value: "copilot_local",
+    label: "Copilot CLI",
+    icon: Code,
+    desc: "Local Copilot agent",
     recommended: true,
   },
   {

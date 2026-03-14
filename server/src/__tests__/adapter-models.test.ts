@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { models as copilotFallbackModels } from "@paperclipai/adapter-copilot-local";
 import { models as codexFallbackModels } from "@paperclipai/adapter-codex-local";
 import { models as cursorFallbackModels } from "@paperclipai/adapter-cursor-local";
 import { resetOpenCodeModelsCacheForTests } from "@paperclipai/adapter-opencode-local/server";
@@ -27,6 +28,14 @@ describe("adapter model listing", () => {
     const models = await listAdapterModels("codex_local");
 
     expect(models).toEqual(codexFallbackModels);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("returns copilot fallback models when no OpenAI key is available", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    const models = await listAdapterModels("copilot_local");
+
+    expect(models).toEqual(copilotFallbackModels);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 

@@ -12,6 +12,12 @@ import {
 } from "@paperclipai/adapter-codex-local/server";
 import { agentConfigurationDoc as codexAgentConfigurationDoc, models as codexModels } from "@paperclipai/adapter-codex-local";
 import {
+  execute as copilotExecute,
+  testEnvironment as copilotTestEnvironment,
+  sessionCodec as copilotSessionCodec,
+} from "@paperclipai/adapter-copilot-local/server";
+import { agentConfigurationDoc as copilotAgentConfigurationDoc, models as copilotModels } from "@paperclipai/adapter-copilot-local";
+import {
   execute as cursorExecute,
   testEnvironment as cursorTestEnvironment,
   sessionCodec as cursorSessionCodec,
@@ -75,6 +81,17 @@ const codexLocalAdapter: ServerAdapterModule = {
   agentConfigurationDoc: codexAgentConfigurationDoc,
 };
 
+const copilotLocalAdapter: ServerAdapterModule = {
+  type: "copilot_local",
+  execute: copilotExecute,
+  testEnvironment: copilotTestEnvironment,
+  sessionCodec: copilotSessionCodec,
+  models: copilotModels,
+  listModels: listCursorModels,
+  supportsLocalAgentJwt: true,
+  agentConfigurationDoc: copilotAgentConfigurationDoc,
+};
+
 const cursorLocalAdapter: ServerAdapterModule = {
   type: "cursor",
   execute: cursorExecute,
@@ -131,6 +148,7 @@ const adaptersByType = new Map<string, ServerAdapterModule>(
   [
     claudeLocalAdapter,
     codexLocalAdapter,
+    copilotLocalAdapter,
     openCodeLocalAdapter,
     piLocalAdapter,
     cursorLocalAdapter,

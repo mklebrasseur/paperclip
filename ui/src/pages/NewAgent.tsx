@@ -23,12 +23,17 @@ import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
 } from "@paperclipai/adapter-codex-local";
+import {
+  DEFAULT_COPILOT_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
+  DEFAULT_COPILOT_LOCAL_MODEL,
+} from "@paperclipai/adapter-copilot-local";
 import { DEFAULT_CURSOR_LOCAL_MODEL } from "@paperclipai/adapter-cursor-local";
 import { DEFAULT_GEMINI_LOCAL_MODEL } from "@paperclipai/adapter-gemini-local";
 
 const SUPPORTED_ADVANCED_ADAPTER_TYPES = new Set<CreateConfigValues["adapterType"]>([
   "claude_local",
   "codex_local",
+  "copilot_local",
   "gemini_local",
   "opencode_local",
   "pi_local",
@@ -45,6 +50,10 @@ function createValuesForAdapterType(
     nextValues.model = DEFAULT_CODEX_LOCAL_MODEL;
     nextValues.dangerouslyBypassSandbox =
       DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX;
+  } else if (adapterType === "copilot_local") {
+    nextValues.model = DEFAULT_COPILOT_LOCAL_MODEL;
+    nextValues.dangerouslyBypassSandbox =
+      DEFAULT_COPILOT_LOCAL_BYPASS_APPROVALS_AND_SANDBOX;
   } else if (adapterType === "gemini_local") {
     nextValues.model = DEFAULT_GEMINI_LOCAL_MODEL;
   } else if (adapterType === "cursor") {

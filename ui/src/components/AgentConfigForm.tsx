@@ -15,6 +15,10 @@ import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
 } from "@paperclipai/adapter-codex-local";
+import {
+  DEFAULT_COPILOT_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
+  DEFAULT_COPILOT_LOCAL_MODEL,
+} from "@paperclipai/adapter-copilot-local";
 import { DEFAULT_CURSOR_LOCAL_MODEL } from "@paperclipai/adapter-cursor-local";
 import { DEFAULT_GEMINI_LOCAL_MODEL } from "@paperclipai/adapter-gemini-local";
 import {
@@ -283,6 +287,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   const isLocal =
     adapterType === "claude_local" ||
     adapterType === "codex_local" ||
+    adapterType === "copilot_local" ||
     adapterType === "gemini_local" ||
     adapterType === "opencode_local" ||
     adapterType === "cursor";
@@ -353,7 +358,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   const thinkingEffortKey =
     adapterType === "codex_local"
       ? "modelReasoningEffort"
-      : adapterType === "cursor"
+      : adapterType === "cursor" || adapterType === "copilot_local"
         ? "mode"
         : adapterType === "opencode_local"
           ? "variant"
@@ -361,7 +366,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   const thinkingEffortOptions =
     adapterType === "codex_local"
       ? codexThinkingEffortOptions
-      : adapterType === "cursor"
+      : adapterType === "cursor" || adapterType === "copilot_local"
         ? cursorModeOptions
         : adapterType === "opencode_local"
           ? openCodeThinkingEffortOptions
@@ -374,7 +379,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
           "modelReasoningEffort",
           String(config.modelReasoningEffort ?? config.reasoningEffort ?? ""),
         )
-      : adapterType === "cursor"
+      : adapterType === "cursor" || adapterType === "copilot_local"
         ? eff("adapterConfig", "mode", String(config.mode ?? ""))
       : adapterType === "opencode_local"
         ? eff("adapterConfig", "variant", String(config.variant ?? ""))
@@ -497,6 +502,10 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                     nextValues.model = DEFAULT_CODEX_LOCAL_MODEL;
                     nextValues.dangerouslyBypassSandbox =
                       DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX;
+                  } else if (t === "copilot_local") {
+                    nextValues.model = DEFAULT_COPILOT_LOCAL_MODEL;
+                    nextValues.dangerouslyBypassSandbox =
+                      DEFAULT_COPILOT_LOCAL_BYPASS_APPROVALS_AND_SANDBOX;
                   } else if (t === "gemini_local") {
                     nextValues.model = DEFAULT_GEMINI_LOCAL_MODEL;
                   } else if (t === "cursor") {
@@ -515,6 +524,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       model:
                         t === "codex_local"
                           ? DEFAULT_CODEX_LOCAL_MODEL
+                          : t === "copilot_local"
+                            ? DEFAULT_COPILOT_LOCAL_MODEL
                           : t === "gemini_local"
                             ? DEFAULT_GEMINI_LOCAL_MODEL
                           : t === "cursor"
@@ -528,6 +539,11 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                         ? {
                             dangerouslyBypassApprovalsAndSandbox:
                               DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
+                          }
+                        : t === "copilot_local"
+                        ? {
+                            dangerouslyBypassApprovalsAndSandbox:
+                              DEFAULT_COPILOT_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
                           }
                         : {}),
                     },
@@ -622,6 +638,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                   placeholder={
                     adapterType === "codex_local"
                       ? "codex"
+                      : adapterType === "copilot_local"
+                        ? "copilot"
                       : adapterType === "gemini_local"
                         ? "gemini"
                       : adapterType === "cursor"
@@ -911,7 +929,7 @@ function AdapterEnvironmentResult({ result }: { result: AdapterEnvironmentTestRe
 
 /* ---- Internal sub-components ---- */
 
-const ENABLED_ADAPTER_TYPES = new Set(["claude_local", "codex_local", "gemini_local", "opencode_local", "cursor"]);
+const ENABLED_ADAPTER_TYPES = new Set(["claude_local", "codex_local", "copilot_local", "gemini_local", "opencode_local", "cursor"]);
 
 /** Display list includes all real adapter types plus UI-only coming-soon entries. */
 const ADAPTER_DISPLAY_LIST: { value: string; label: string; comingSoon: boolean }[] = [
