@@ -1,4 +1,11 @@
 export {
+  upsertBudgetPolicySchema,
+  resolveBudgetIncidentSchema,
+  type UpsertBudgetPolicy,
+  type ResolveBudgetIncident,
+} from "./budget.js";
+
+export {
   createCompanySchema,
   updateCompanySchema,
   type CreateCompany,
@@ -66,6 +73,9 @@ export {
   addIssueCommentSchema,
   linkIssueApprovalSchema,
   createIssueAttachmentMetadataSchema,
+  issueDocumentFormatSchema,
+  issueDocumentKeySchema,
+  upsertIssueDocumentSchema,
   type CreateIssue,
   type CreateIssueLabel,
   type UpdateIssue,
@@ -74,6 +84,8 @@ export {
   type AddIssueComment,
   type LinkIssueApproval,
   type CreateIssueAttachmentMetadata,
+  type IssueDocumentFormat,
+  type UpsertIssueDocument,
 } from "./issue.js";
 
 export {
@@ -117,6 +129,11 @@ export {
 } from "./cost.js";
 
 export {
+  createFinanceEventSchema,
+  type CreateFinanceEvent,
+} from "./finance.js";
+
+export {
   createAssetImageMetadataSchema,
   type CreateAssetImageMetadata,
 } from "./asset.js";
@@ -137,3 +154,39 @@ export {
   type UpdateMemberPermissions,
   type UpdateUserCompanyAccess,
 } from "./access.js";
+
+export {
+  jsonSchemaSchema,
+  pluginJobDeclarationSchema,
+  pluginWebhookDeclarationSchema,
+  pluginToolDeclarationSchema,
+  pluginUiSlotDeclarationSchema,
+  pluginLauncherActionDeclarationSchema,
+  pluginLauncherRenderDeclarationSchema,
+  pluginLauncherDeclarationSchema,
+  pluginManifestV1Schema,
+  installPluginSchema,
+  upsertPluginConfigSchema,
+  patchPluginConfigSchema,
+  updatePluginStatusSchema,
+  uninstallPluginSchema,
+  pluginStateScopeKeySchema,
+  setPluginStateSchema,
+  listPluginStateSchema,
+  type PluginJobDeclarationInput,
+  type PluginWebhookDeclarationInput,
+  type PluginToolDeclarationInput,
+  type PluginUiSlotDeclarationInput,
+  type PluginLauncherActionDeclarationInput,
+  type PluginLauncherRenderDeclarationInput,
+  type PluginLauncherDeclarationInput,
+  type PluginManifestV1Input,
+  type InstallPlugin,
+  type UpsertPluginConfig,
+  type PatchPluginConfig,
+  type UpdatePluginStatus,
+  type UninstallPlugin,
+  type PluginStateScopeKey,
+  type SetPluginState,
+  type ListPluginState,
+} from "./plugin.js";
