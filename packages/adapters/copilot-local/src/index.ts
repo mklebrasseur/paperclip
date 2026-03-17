@@ -30,5 +30,6 @@ Notes:
 - Prompts are passed as the value to \`-p\` (Copilot non-interactive prompt mode).
 - The Copilot CLI does not support the \`--workspace\` flag.
 - Copilot uses \`--output-format json\` which emits JSONL events with dot-notation types (e.g. \`assistant.message_delta\`).
+- Paperclip auto-injects local skills into \`~/.copilot/skills\` when missing, so Copilot can discover the bundled Paperclip skills.
 - When Paperclip realizes a workspace/runtime for a run, it injects PAPERCLIP_WORKSPACE_* and PAPERCLIP_RUNTIME_* env vars for agent-side tooling.
 `;

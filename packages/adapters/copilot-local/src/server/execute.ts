@@ -1,5 +1,7 @@
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { AdapterExecutionContext, AdapterExecutionResult } from "@paperclipai/adapter-utils";
 import {
   asString,
@@ -10,12 +12,17 @@ import {
   redactEnvForLogs,
   ensureAbsoluteDirectory,
   ensureCommandResolvable,
+  ensurePaperclipSkillSymlink,
   ensurePathInEnv,
+  listPaperclipSkillEntries,
+  removeMaintainerOnlySkillSymlinks,
   renderTemplate,
   runChildProcess,
 } from "@paperclipai/adapter-utils/server-utils";
 import { DEFAULT_COPILOT_LOCAL_MODEL } from "../index.js";
 import { parseCopilotJsonl, isCopilotUnknownSessionError } from "./parse.js";
+
+const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
 function firstNonEmptyLine(text: string): string {
   return (
@@ -36,12 +43,6 @@ function resolveProviderFromModel(model: string): string | null {
   return null;
 }
 
-function normalizeMode(rawMode: string): "plan" | "ask" | null {
-  const mode = rawMode.trim().toLowerCase();
-  if (mode === "plan" || mode === "ask") return mode;
-  return null;
-}
-
 function renderPaperclipEnvNote(env: Record<string, string>): string {
   const paperclipKeys = Object.keys(env)
     .filter((key) => key.startsWith("PAPERCLIP_"))
@@ -54,6 +55,55 @@ function renderPaperclipEnvNote(env: Record<string, string>): string {
     "",
     "",
   ].join("\n");
+}
+
+function copilotSkillsHome(): string {
+  return path.join(os.homedir(), ".copilot", "skills");
+}
+
+async function ensureCopilotSkillsInjected(onLog: AdapterExecutionContext["onLog"]) {
+  const skillsEntries = await listPaperclipSkillEntries(__moduleDir);
+  if (skillsEntries.length === 0) return;
+
+  const skillsHome = copilotSkillsHome();
+  try {
+    await fs.mkdir(skillsHome, { recursive: true });
+  } catch (err) {
+    await onLog(
+      "stderr",
+      `[paperclip] Failed to prepare Copilot skills directory ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
+    );
+    return;
+  }
+
+  const removedSkills = await removeMaintainerOnlySkillSymlinks(
+    skillsHome,
+    skillsEntries.map((entry) => entry.name),
+  );
+  for (const skillName of removedSkills) {
+    await onLog(
+      "stderr",
+      `[paperclip] Removed maintainer-only Copilot skill "${skillName}" from ${skillsHome}\n`,
+    );
+  }
+
+  for (const entry of skillsEntries) {
+    const target = path.join(skillsHome, entry.name);
+    try {
+      const result = await ensurePaperclipSkillSymlink(entry.source, target);
+      if (result === "skipped") continue;
+
+      await onLog(
+        "stderr",
+        `[paperclip] ${result === "repaired" ? "Repaired" : "Injected"} Copilot skill "${entry.name}" into ${skillsHome}\n`,
+      );
+    } catch (err) {
+      await onLog(
+        "stderr",
+        `[paperclip] Failed to inject Copilot skill "${entry.name}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
+      );
+    }
+  }
 }
 
 /** Copilot CLI uses `--yolo`/`--trust` to bypass interactive prompts, same as Cursor. */
@@ -97,7 +147,6 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   );
   const command = asString(config.command, "copilot");
   const model = asString(config.model, DEFAULT_COPILOT_LOCAL_MODEL).trim();
-  const mode = normalizeMode(asString(config.mode, ""));
 
   const workspaceContext = parseObject(context.paperclipWorkspace);
   const workspaceCwd = asString(workspaceContext.cwd, "");
@@ -115,6 +164,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const effectiveWorkspaceCwd = useConfiguredInsteadOfAgentHome ? "" : workspaceCwd;
   const cwd = effectiveWorkspaceCwd || configuredCwd || process.cwd();
   await ensureAbsoluteDirectory(cwd, { createIfMissing: true });
+  await ensureCopilotSkillsInjected(onLog);
 
   const envConfig = parseObject(config.env);
   const hasExplicitApiKey =
@@ -246,7 +296,6 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     const args = ["-p", prompt, "--output-format", "json"];
     if (resumeSessionId) args.push("--resume", resumeSessionId);
     if (model) args.push("--model", model);
-    if (mode) args.push("--mode", mode);
     if (autoTrustEnabled) args.push("--yolo");
     if (extraArgs.length > 0) args.push(...extraArgs);
     return args;

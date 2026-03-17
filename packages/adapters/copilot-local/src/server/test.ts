@@ -93,7 +93,7 @@ export async function testEnvironment(
       if (fromExtraArgs.length > 0) return fromExtraArgs;
       return asStringArray(config.args);
     })();
-    const args = ["-p", "Respond with hello.", "--mode", "ask", "--output-format", "json"];
+    const args = ["-p", "Respond with hello.", "--output-format", "json"];
     if (model) args.push("--model", model);
     args.push("--yolo");
     if (extraArgs.length > 0) args.push(...extraArgs);
@@ -118,7 +118,7 @@ export async function testEnvironment(
         code: "copilot_hello_probe_timed_out",
         level: "warn",
         message: "Copilot hello probe timed out.",
-        hint: "Retry the probe. If this persists, verify `copilot -p \"Respond with hello.\" --mode ask --output-format json` manually.",
+        hint: "Retry the probe. If this persists, verify `copilot -p \"Respond with hello.\" --output-format json` manually.",
       });
     } else if ((probe.exitCode ?? 1) === 0) {
       const summary = parsed.summary.trim();
@@ -133,7 +133,7 @@ export async function testEnvironment(
         ...(hasHello
           ? {}
           : {
-              hint: "Try `copilot -p \"Respond with hello.\" --mode ask --output-format json` manually to inspect full output.",
+              hint: "Try `copilot -p \"Respond with hello.\" --output-format json` manually to inspect full output.",
             }),
       });
     } else {
@@ -142,7 +142,7 @@ export async function testEnvironment(
         level: "error",
         message: "Copilot hello probe failed.",
         ...(detail ? { detail } : {}),
-        hint: "Run `copilot -p \"Respond with hello.\" --mode ask --output-format json` manually in this working directory to debug.",
+        hint: "Run `copilot -p \"Respond with hello.\" --output-format json` manually in this working directory to debug.",
       });
     }
   }

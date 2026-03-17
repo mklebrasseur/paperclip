@@ -23,6 +23,11 @@ Data persistence:
 - local secrets key
 - local agent workspace data
 
+The image also includes runtime tooling commonly required by coding agents:
+
+- Docker CLI (`docker`)
+- Playwright Chromium browser + system dependencies
+
 All persisted under your bind mount (`./data/docker-paperclip` in the example above).
 
 ## Compose Quickstart
@@ -41,6 +46,51 @@ Optional overrides:
 ```sh
 PAPERCLIP_PORT=3200 PAPERCLIP_DATA_DIR=./data/pc docker compose -f docker-compose.quickstart.yml up --build
 ```
+
+## Integrating With Insight Ory Stack (`*.app.local`)
+
+When Paperclip runs in Docker and needs to call Insight auth infrastructure routed by Oathkeeper
+(`auth.app.local`, `insight.app.local`, `api.insight.app.local`, `app.local`), the compose files
+already include `extra_hosts` mappings to `host-gateway`.
+
+Required behavior:
+
+- Run the Insight Ory stack on the same Docker host (for example from
+  `insight-ops/needs-update/docker-compose.yml`).
+- Ensure Oathkeeper/Kratos ports are exposed on host as expected by Insight compose.
+- Start Paperclip compose after Insight Ory services are healthy.
+
+Example workflow:
+
+```sh
+# terminal 1: Insight Ory stack
+cd /home/squad/skelr/gec/insight/insight-ops/needs-update
+docker compose up -d
+
+# terminal 2: Paperclip
+cd /home/squad/squadhq/paperclip
+docker compose up --build
+```
+
+Smoke check from Paperclip container:
+
+```sh
+docker compose exec server sh -lc 'getent hosts auth.app.local && curl -I http://auth.app.local/health/ready'
+```
+
+If your Docker engine does not support `host-gateway`, replace those `extra_hosts` entries with the
+actual host bridge IP.
+
+## Docker-in-Docker Socket Access (for E2E orchestration)
+
+If your agents need to run Docker commands from inside the Paperclip container (for example, project-level end-to-end setup), mount the host Docker socket and pass its group id:
+
+```sh
+export DOCKER_GID="$(stat -c '%g' /var/run/docker.sock)"
+docker compose up --build
+```
+
+The default `docker-compose.yml` already mounts `/var/run/docker.sock` and applies `group_add` using `DOCKER_GID`.
 
 If you change host port or use a non-local domain, set `PAPERCLIP_PUBLIC_URL` to the external URL you will use in browser/auth flows.
 
